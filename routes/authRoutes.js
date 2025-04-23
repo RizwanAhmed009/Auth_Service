@@ -81,11 +81,19 @@ const authenticate = (req, res, next) => {
   });
 };
 
-router.get("/", (req, resp) => {
-  console.log("Hit auth service endpoint...");
-  return resp.json({
-    message: "Auth services is running!",
-  });
+router.get("/user/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [user] = await db.query("SELECT * FROM users WHERE id = ?", [id]);
+    if (!user || user.length === 0) {
+      return res.status(404).send("User not found");
+    }
+    return res.json(user[0]);
+  } catch (error) {
+    console.error("Auth service error:", error.message);
+    res.status(500).send("Internal Server Error");
+  }
 });
+
 
 module.exports = { router, authenticate };
